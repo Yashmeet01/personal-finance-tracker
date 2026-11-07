@@ -15,6 +15,7 @@ function TransactionsPage() {
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
   const [filterType, setFilterType] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("");
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -53,10 +54,12 @@ function TransactionsPage() {
   }
 
   const visibleTransactions = transactions.filter((item) => {
-    if (filterType === "all") {
-      return true;
-    }
-    return item.type === filterType;
+    const typeMatches = filterType === "all" || item.type === filterType;
+    const categoryMatches =
+      filterCategory === "" ||
+      item.category.toLowerCase().includes(filterCategory.toLowerCase());
+
+    return typeMatches && categoryMatches;
   });
 
   return (
@@ -95,11 +98,19 @@ function TransactionsPage() {
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
 
-      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-        <option value="all">All</option>
-        <option value="income">Income</option>
-        <option value="expense">Expense</option>
-      </select>
+      <div>
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+          <option value="all">All</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <input
+          type="text"
+          placeholder="Filter by category"
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+        />
+      </div>
 
       <p>Total transactions: {visibleTransactions.length}</p>
 
