@@ -1,20 +1,169 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const BASE_URL = "http://localhost:5000/api";
 
 function BudgetPage() {
-  // TEMPORARY sample data (not from MongoDB)
-  const expenses = [
-    { id: 1, title: "Lunch", amount: 150, category: "Food", date: "2026-11-05" },
-    { id: 2, title: "Bus ticket", amount: 40, category: "Travel", date: "2026-11-03" },
-    { id: 3, title: "Movie", amount: 300, category: "Fun", date: "2026-10-20" },
-  ];
-
-  const [month, setMonth] = useState("2026-11");
-  const [budget, setBudget] = useState(500);
+  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [budget, setBudget] = useState(0);
   const [budgetInput, setBudgetInput] = useState("");
+  const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [categoryInput, setCategoryInput] = useState("");
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  function authHeaders() {
+    return {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    };
+  }
+
+  // Load transactions and categories once
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const transRes = await fetch(BASE_URL + "/transactions", {
+          headers: authHeaders(),
+        });
+        const transData = await transRes.json();
+        if (transRes.ok) {
+          setTransactions(transData);
+        }
+
+        const catRes = await fetch(BASE_URL + "/categories", {
+          headers: authHeaders(),
+        });
+        const catData = await catRes.json();
+        if (catRes.ok) {
+          setCategories(catData);
+        }
+      } catch (err) {
+        setError("Cannot reach the server");
+      }
+      setLoading(false);
+    }
+
+    loadData();
+  }, []);
+
+  // Load the budget again whenever the month changes
+  useEffect(() => {
+    async function loadBudget() {
+      try {
+        const response = await fetch(BASE_URL + "/budgets/" + month, {
+          headers: authHeaders(),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setBudget(data.amount);
+        }
+      } catch (err) {
+        setError("Cannot reach the server");
+      }
+    }
+
+    if (month) {
+      loadBudget();
+    }
+  }, [month]);
+
+  async function handleSetBudget(event) {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (budgetInput === "" || Number(budgetInput) <= 0) {
+      setError("Enter a budget greater than 0");
+      return;
+    }
+
+    try {
+      const response = await fetch(BASE_URL + "/budgets/" + month, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ amount: Number(budgetInput) }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setBudget(data.amount);
+      setBudgetInput("");
+      setSuccess("Budget saved for " + month);
+    } catch (err) {
+      setError("Cannot reach the server");
+    }
+  }
+
+  async function handleAddCategory(event) {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (categoryInput.trim() === "") {
+      setError("Enter a category name");
+      return;
+    }
+
+    try {
+      const response = await fetch(BASE_URL + "/categories", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ name: categoryInput }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setCategories([...categories, data]);
+      setCategoryInput("");
+      setSuccess("Category added");
+    } catch (err) {
+      setError("Cannot reach the server");
+    }
+  }
+
+  async function handleDeleteCategory(id) {
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(BASE_URL + "/categories/" + id, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setCategories(categories.filter((item) => item._id !== id));
+      setSuccess("Category deleted");
+    } catch (err) {
+      setError("Cannot reach the server");
+    }
+  }
+
+  if (loading) {
+    return <p>Loading budget...</p>;
+  }
 
   // Only expenses from the selected month
-  const monthExpenses = expenses.filter((item) => item.date.startsWith(month));
+  const monthExpenses = transactions.filter(
+    (item) => item.type === "expense" && item.date.startsWith(month)
+  );
 
   const spent = monthExpenses.reduce((total, item) => total + item.amount, 0);
   const remaining = budget - spent;
@@ -26,30 +175,20 @@ function BudgetPage() {
 
   let barClass = "bar-good";
   let warning = "";
-  if (percent > 100) {
+  if (budget > 0 && percent > 100) {
     barClass = "bar-danger";
     warning = "Budget exceeded!";
-  } else if (percent >= 80) {
+  } else if (budget > 0 && percent >= 80) {
     barClass = "bar-warning";
     warning = "Warning: you are close to your budget.";
-  }
-
-  function handleSetBudget(event) {
-    event.preventDefault();
-
-    if (budgetInput === "" || Number(budgetInput) <= 0) {
-      setError("Enter a budget greater than 0");
-      return;
-    }
-
-    setBudget(Number(budgetInput));
-    setBudgetInput("");
-    setError("");
   }
 
   return (
     <div>
       <h2>Budget</h2>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
 
       <form onSubmit={handleSetBudget}>
         <label>Month: </label>
@@ -65,7 +204,6 @@ function BudgetPage() {
           onChange={(e) => setBudgetInput(e.target.value)}
         />
         <button type="submit">Set Budget</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
 
       <div className="cards">
@@ -92,6 +230,45 @@ function BudgetPage() {
         </div>
         <p>{Math.round(percent)}% of budget used</p>
         {warning && <p className="warning-text">{warning}</p>}
+      </div>
+
+      <div className="panel">
+        <h3>Expense Categories</h3>
+
+        <form onSubmit={handleAddCategory}>
+          <input
+            type="text"
+            placeholder="New category (e.g. Food)"
+            value={categoryInput}
+            onChange={(e) => setCategoryInput(e.target.value)}
+          />
+          <button type="submit">Add Category</button>
+        </form>
+
+        {categories.length === 0 ? (
+          <p>No categories yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((item) => (
+                <tr key={item._id}>
+                  <td>{item.name}</td>
+                  <td>
+                    <button onClick={() => handleDeleteCategory(item._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
