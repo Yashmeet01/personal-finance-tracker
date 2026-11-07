@@ -176,3 +176,53 @@ tr:hover td {
     overflow-x: auto;
   }
 }
+
+/* ---------- Budget progress bar ---------- */
+.progress-box {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  margin-top: 15px;
+}
+
+.progress-track {
+  background-color: #ecf0f1;
+  border-radius: 10px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+}
+
+.bar-good {
+  background-color: #27ae60;
+}
+
+.bar-warning {
+  background-color: #f39c12;
+}
+
+.bar-danger {
+  background-color: #e74c3c;
+}
+
+.warning-text {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.auth-box {
+  max-width: 380px;
+  margin: 40px auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.auth-box input {
+  width: 100%;
+}
