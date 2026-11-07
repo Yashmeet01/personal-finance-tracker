@@ -15,6 +15,7 @@ function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [categories, setCategories] = useState([]);
 
   const token = localStorage.getItem("token");
 
@@ -25,9 +26,9 @@ function TransactionsPage() {
     };
   }
 
-  // Runs once when the page appears: load my transactions
+  // Runs once when the page appears: load my transactions and categories
   useEffect(() => {
-    async function loadTransactions() {
+    async function loadData() {
       try {
         const response = await fetch(API_URL, { headers: authHeaders() });
         const data = await response.json();
@@ -37,13 +38,21 @@ function TransactionsPage() {
         } else {
           setTransactions(data);
         }
+
+        const catResponse = await fetch("http://localhost:5000/api/categories", {
+          headers: authHeaders(),
+        });
+        const catData = await catResponse.json();
+        if (catResponse.ok) {
+          setCategories(catData);
+        }
       } catch (err) {
         setError("Cannot reach the server");
       }
       setLoading(false);
     }
 
-    loadTransactions();
+    loadData();
   }, []);
 
   function clearForm() {
@@ -83,60 +92,3 @@ function TransactionsPage() {
         });
       } else {
         response = await fetch(API_URL + "/" + editingId, {
-          method: "PUT",
-          headers: authHeaders(),
-          body: body,
-        });
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message);
-        return;
-      }
-
-      if (editingId === null) {
-        setTransactions([data, ...transactions]);
-        setSuccess("Transaction added");
-      } else {
-        setTransactions(
-          transactions.map((item) => (item._id === editingId ? data : item))
-        );
-        setSuccess("Transaction updated");
-      }
-
-      clearForm();
-    } catch (err) {
-      setError("Cannot reach the server");
-    }
-  }
-
-  function handleEdit(item) {
-    setEditingId(item._id);
-    setTitle(item.title);
-    setAmount(item.amount);
-    setType(item.type);
-    setCategory(item.category);
-    setDate(item.date.slice(0, 10));
-    setError("");
-    setSuccess("");
-  }
-
-  async function handleDelete(id) {
-    setError("");
-    setSuccess("");
-
-    try {
-      const response = await fetch(API_URL + "/" + id, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message);
-        return;
-      }
-
-      setTransactions(transactions.filter((item) => item._id !== id));
