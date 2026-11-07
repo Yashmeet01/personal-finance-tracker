@@ -1,22 +1,21 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 
 const app = express();
 
 app.get("/", (req, res) => {
-    res.send("Server is running!");
+  res.send("Server is running!");
 });
 
-app.get("/hello", (req, res) => {
-    res.send("Hello, Yashmeet!");
-});
-app.get("/api/sample", (req, res) => {
-    const sampleTransactions = [
-        { title: "Lunch", amount: 150, type: "expense" },
-        { title: "Pocket money", amount: 2000, type: "income" },
-    ];
-
-    res.json(sampleTransactions);
-});
-app.listen(5000, () => {
-    console.log("Server started on port 5000");
-});
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+    app.listen(5000, () => {
+      console.log("Server started on port 5000");
+    });
+  })
+  .catch((error) => {
+    console.log("MongoDB connection failed:", error.message);
+  });
