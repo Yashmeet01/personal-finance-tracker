@@ -16,6 +16,17 @@ function TransactionsPage() {
   const [error, setError] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("");
+  const [editingId, setEditingId] = useState(null);
+
+  function clearForm() {
+    setTitle("");
+    setAmount("");
+    setType("expense");
+    setCategory("");
+    setDate("");
+    setError("");
+    setEditingId(null);
+  }
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -30,21 +41,45 @@ function TransactionsPage() {
       return;
     }
 
-    const newTransaction = {
-      id: Date.now(),
-      title: title,
-      amount: Number(amount),
-      type: type,
-      category: category,
-      date: date,
-    };
+    if (editingId === null) {
+      // ADD a new transaction
+      const newTransaction = {
+        id: Date.now(),
+        title: title,
+        amount: Number(amount),
+        type: type,
+        category: category,
+        date: date,
+      };
+      setTransactions([...transactions, newTransaction]);
+    } else {
+      // UPDATE an existing transaction
+      const updatedList = transactions.map((item) => {
+        if (item.id === editingId) {
+          return {
+            id: editingId,
+            title: title,
+            amount: Number(amount),
+            type: type,
+            category: category,
+            date: date,
+          };
+        }
+        return item;
+      });
+      setTransactions(updatedList);
+    }
 
-    setTransactions([...transactions, newTransaction]);
+    clearForm();
+  }
 
-    setTitle("");
-    setAmount("");
-    setCategory("");
-    setDate("");
+  function handleEdit(item) {
+    setEditingId(item.id);
+    setTitle(item.title);
+    setAmount(item.amount);
+    setType(item.type);
+    setCategory(item.category);
+    setDate(item.date);
     setError("");
   }
 
@@ -94,7 +129,12 @@ function TransactionsPage() {
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
-        <button type="submit">Add</button>
+        <button type="submit">{editingId === null ? "Add" : "Update"}</button>
+        {editingId !== null && (
+          <button type="button" onClick={clearForm}>
+            Cancel
+          </button>
+        )}
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
 
@@ -134,6 +174,7 @@ function TransactionsPage() {
               <td>{item.category}</td>
               <td>{item.date}</td>
               <td>
+                <button onClick={() => handleEdit(item)}>Edit</button>
                 <button onClick={() => handleDelete(item.id)}>Delete</button>
               </td>
             </tr>
