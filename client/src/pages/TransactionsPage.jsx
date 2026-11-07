@@ -8,9 +8,82 @@ function TransactionsPage() {
     { id: 3, title: "Bus ticket", amount: 40, type: "expense", category: "Travel", date: "2026-11-03" },
   ]);
 
+  // STEP 1: form states
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState("expense");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
+  const [error, setError] = useState("");
+
+  // STEP 2: submit function
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    if (title === "" || amount === "" || category === "" || date === "") {
+      setError("Please fill all fields");
+      return;
+    }
+
+    if (Number(amount) <= 0) {
+      setError("Amount must be greater than 0");
+      return;
+    }
+
+    const newTransaction = {
+      id: Date.now(),
+      title: title,
+      amount: Number(amount),
+      type: type,
+      category: category,
+      date: date,
+    };
+
+    setTransactions([...transactions, newTransaction]);
+
+    setTitle("");
+    setAmount("");
+    setCategory("");
+    setDate("");
+    setError("");
+  }
+
   return (
     <div>
       <h2>Transactions</h2>
+
+      {/* STEP 3: the form */}
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <select value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+        <input
+          type="text"
+          placeholder="Category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <button type="submit">Add</button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </form>
 
       <table>
         <thead>
