@@ -1,7 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation(); // makes Navbar redraw on every page change
   const token = localStorage.getItem("token");
 
   function handleLogout() {
