@@ -32,3 +32,20 @@ body {
   margin: 20px auto;
   padding: 0 15px;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #ecf0f1;
+}
