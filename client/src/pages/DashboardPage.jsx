@@ -18,17 +18,17 @@ function DashboardPage() {
       <h2>Dashboard</h2>
 
       <div className="cards">
-        <div className="card">
+        <div className="card balance-card">
           <p>Total Balance</p>
           <h3>₹{balance}</h3>
         </div>
-        <div className="card">
+        <div className="card income-card">
           <p>Total Income</p>
-          <h3 style={{ color: "green" }}>₹{totalIncome}</h3>
+          <h3>₹{totalIncome}</h3>
         </div>
-        <div className="card">
+        <div className="card expense-card">
           <p>Total Expenses</p>
-          <h3 style={{ color: "red" }}>₹{totalExpense}</h3>
+          <h3>₹{totalExpense}</h3>
         </div>
       </div>
     </div>

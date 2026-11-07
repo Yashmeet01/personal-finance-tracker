@@ -1,15 +1,27 @@
+/* ---------- Basics ---------- */
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background-color: #f4f6f8;
+  color: #2c3e50;
 }
 
+h2 {
+  margin-top: 0;
+}
+
+/* ---------- Navbar ---------- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   background-color: #2c3e50;
-  padding: 10px 20px;
+  padding: 12px 24px;
 }
 
 .logo {
@@ -18,38 +30,25 @@ body {
 }
 
 .nav-links a {
-  color: white;
+  color: #ecf0f1;
   text-decoration: none;
-  margin-left: 15px;
+  margin-left: 8px;
+  padding: 8px 14px;
+  border-radius: 4px;
 }
 
 .nav-links a:hover {
-  text-decoration: underline;
+  background-color: #3d566e;
 }
 
+/* ---------- Layout ---------- */
 .container {
-  max-width: 900px;
-  margin: 20px auto;
+  max-width: 950px;
+  margin: 24px auto;
   padding: 0 15px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-}
-
-th,
-td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-}
-
-th {
-  background-color: #ecf0f1;
-}
-
+/* ---------- Dashboard cards ---------- */
 .cards {
   display: flex;
   gap: 15px;
@@ -60,12 +59,120 @@ th {
   flex: 1;
   min-width: 200px;
   background-color: white;
-  padding: 15px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  padding: 18px;
+  border-radius: 8px;
+  border-top: 4px solid #3498db;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .card p {
+  margin: 0 0 8px 0;
+  color: #666;
+}
+
+.card h3 {
   margin: 0;
-  color: #555;
+  font-size: 26px;
+}
+
+.income-card {
+  border-top-color: #27ae60;
+}
+
+.income-card h3 {
+  color: #27ae60;
+}
+
+.expense-card {
+  border-top-color: #e74c3c;
+}
+
+.expense-card h3 {
+  color: #e74c3c;
+}
+
+/* ---------- Forms ---------- */
+form {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  margin-bottom: 15px;
+}
+
+input,
+select {
+  padding: 9px;
+  margin: 5px 6px 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+button {
+  padding: 9px 16px;
+  margin: 5px 6px 5px 0;
+  border: none;
+  border-radius: 4px;
+  background-color: #3498db;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* ---------- Table ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+th {
+  background-color: #ecf0f1;
+}
+
+tr:hover td {
+  background-color: #fafafa;
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 600px) {
+  .navbar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    margin: 0 4px;
+  }
+
+  input,
+  select {
+    width: 100%;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
 }
