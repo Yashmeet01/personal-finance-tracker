@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-const API_URL = "http://localhost:5000/api/transactions";
+const API = import.meta.env.VITE_API_URL;
+const API_URL = API + "/api/transactions";
 
 function DashboardPage() {
   const [transactions, setTransactions] = useState([]);
@@ -14,6 +15,14 @@ function DashboardPage() {
         const response = await fetch(API_URL, {
           headers: { Authorization: "Bearer " + token },
         });
+
+        if (response.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+          return;
+        }
+
         const data = await response.json();
 
         if (!response.ok) {

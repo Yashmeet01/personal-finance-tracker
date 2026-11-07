@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL;
+
 function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -33,8 +35,8 @@ function AuthPage() {
     setLoading(true);
 
     const url = isLogin
-      ? "http://localhost:5000/api/auth/login"
-      : "http://localhost:5000/api/auth/signup";
+      ? API + "/api/auth/login"
+      : API + "/api/auth/signup";
 
     const body = isLogin ? { email, password } : { name, email, password };
 
@@ -98,14 +100,4 @@ function AuthPage() {
         )}
       </form>
 
-      <p>
-        {isLogin ? "New here? " : "Already have an account? "}
-        <button type="button" onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? "Sign Up" : "Login"}
-        </button>
-      </p>
-    </div>
-  );
-}
-
-export default AuthPage;
+      <p></p>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-const BASE_URL = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL;
+const BASE_URL = API + "/api";
 
 function BudgetPage() {
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
