@@ -1,22 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const API_URL = "http://localhost:5000/api/transactions";
 
 function TransactionsPage() {
-  // TEMPORARY sample data (not from MongoDB)
-  const [transactions, setTransactions] = useState([
-    { id: 1, title: "Lunch", amount: 150, type: "expense", category: "Food", date: "2026-11-05" },
-    { id: 2, title: "Pocket money", amount: 2000, type: "income", category: "Allowance", date: "2026-11-01" },
-    { id: 3, title: "Bus ticket", amount: 40, type: "expense", category: "Travel", date: "2026-11-03" },
-  ]);
-
+  const [transactions, setTransactions] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
-  const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState(null);
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("");
-  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  function authHeaders() {
+    return {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    };
+  }
+
+  // Runs once when the page appears: load my transactions
+  useEffect(() => {
+    async function loadTransactions() {
+      try {
+        const response = await fetch(API_URL, { headers: authHeaders() });
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.message);
+        } else {
+          setTransactions(data);
+        }
+      } catch (err) {
+        setError("Cannot reach the server");
+      }
+      setLoading(false);
+    }
+
+    loadTransactions();
+  }, []);
 
   function clearForm() {
     setTitle("");
@@ -24,12 +52,13 @@ function TransactionsPage() {
     setType("expense");
     setCategory("");
     setDate("");
-    setError("");
     setEditingId(null);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+    setSuccess("");
 
     if (title === "" || amount === "" || category === "" || date === "") {
       setError("Please fill all fields");
@@ -41,148 +70,73 @@ function TransactionsPage() {
       return;
     }
 
-    if (editingId === null) {
-      // ADD a new transaction
-      const newTransaction = {
-        id: Date.now(),
-        title: title,
-        amount: Number(amount),
-        type: type,
-        category: category,
-        date: date,
-      };
-      setTransactions([...transactions, newTransaction]);
-    } else {
-      // UPDATE an existing transaction
-      const updatedList = transactions.map((item) => {
-        if (item.id === editingId) {
-          return {
-            id: editingId,
-            title: title,
-            amount: Number(amount),
-            type: type,
-            category: category,
-            date: date,
-          };
-        }
-        return item;
-      });
-      setTransactions(updatedList);
-    }
+    const body = JSON.stringify({ title, amount: Number(amount), type, category, date });
 
-    clearForm();
+    try {
+      let response;
+
+      if (editingId === null) {
+        response = await fetch(API_URL, {
+          method: "POST",
+          headers: authHeaders(),
+          body: body,
+        });
+      } else {
+        response = await fetch(API_URL + "/" + editingId, {
+          method: "PUT",
+          headers: authHeaders(),
+          body: body,
+        });
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      if (editingId === null) {
+        setTransactions([data, ...transactions]);
+        setSuccess("Transaction added");
+      } else {
+        setTransactions(
+          transactions.map((item) => (item._id === editingId ? data : item))
+        );
+        setSuccess("Transaction updated");
+      }
+
+      clearForm();
+    } catch (err) {
+      setError("Cannot reach the server");
+    }
   }
 
   function handleEdit(item) {
-    setEditingId(item.id);
+    setEditingId(item._id);
     setTitle(item.title);
     setAmount(item.amount);
     setType(item.type);
     setCategory(item.category);
-    setDate(item.date);
+    setDate(item.date.slice(0, 10));
     setError("");
+    setSuccess("");
   }
 
-  function handleDelete(id) {
-    const remaining = transactions.filter((item) => item.id !== id);
-    setTransactions(remaining);
-  }
+  async function handleDelete(id) {
+    setError("");
+    setSuccess("");
 
-  const visibleTransactions = transactions.filter((item) => {
-    const typeMatches = filterType === "all" || item.type === filterType;
-    const categoryMatches =
-      filterCategory === "" ||
-      item.category.toLowerCase().includes(filterCategory.toLowerCase());
+    try {
+      const response = await fetch(API_URL + "/" + id, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      const data = await response.json();
 
-    return typeMatches && categoryMatches;
-  });
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
 
-  return (
-    <div>
-      <h2>Transactions</h2>
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <select value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-        <button type="submit">{editingId === null ? "Add" : "Update"}</button>
-        {editingId !== null && (
-          <button type="button" onClick={clearForm}>
-            Cancel
-          </button>
-        )}
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
-
-      <div>
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-          <option value="all">All</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Filter by category"
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        />
-      </div>
-
-      <p>Total transactions: {visibleTransactions.length}</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Amount</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visibleTransactions.map((item) => (
-            <tr key={item.id}>
-              <td>{item.title}</td>
-              <td>₹{item.amount}</td>
-              <td>{item.type}</td>
-              <td>{item.category}</td>
-              <td>{item.date}</td>
-              <td>
-                <button onClick={() => handleEdit(item)}>Edit</button>
-                <button onClick={() => handleDelete(item.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-export default TransactionsPage;
+      setTransactions(transactions.filter((item) => item._id !== id));
