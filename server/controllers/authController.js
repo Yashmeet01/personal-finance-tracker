@@ -10,6 +10,11 @@ async function signup(req, res) {
       return res.status(400).json({ message: "Please fill all fields" });
     }
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).json({ message: "Enter a valid email address" });
+    }
+
     if (password.length < 6) {
       return res
         .status(400)

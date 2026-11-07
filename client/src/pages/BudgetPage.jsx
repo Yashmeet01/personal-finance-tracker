@@ -29,6 +29,14 @@ function BudgetPage() {
         const transRes = await fetch(BASE_URL + "/transactions", {
           headers: authHeaders(),
         });
+
+        if (transRes.status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+          return;
+        }
+
         const transData = await transRes.json();
         if (transRes.ok) {
           setTransactions(transData);
