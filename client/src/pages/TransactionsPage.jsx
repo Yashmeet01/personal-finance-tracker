@@ -14,6 +14,7 @@ function TransactionsPage() {
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
+  const [filterType, setFilterType] = useState("all");
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -51,6 +52,13 @@ function TransactionsPage() {
     setTransactions(remaining);
   }
 
+  const visibleTransactions = transactions.filter((item) => {
+    if (filterType === "all") {
+      return true;
+    }
+    return item.type === filterType;
+  });
+
   return (
     <div>
       <h2>Transactions</h2>
@@ -87,7 +95,13 @@ function TransactionsPage() {
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
 
-      <p>Total transactions: {transactions.length}</p>
+      <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+        <option value="all">All</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+
+      <p>Total transactions: {visibleTransactions.length}</p>
 
       <table>
         <thead>
@@ -101,7 +115,7 @@ function TransactionsPage() {
           </tr>
         </thead>
         <tbody>
-          {transactions.map((item) => (
+          {visibleTransactions.map((item) => (
             <tr key={item.id}>
               <td>{item.title}</td>
               <td>₹{item.amount}</td>
