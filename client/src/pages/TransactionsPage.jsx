@@ -8,7 +8,6 @@ function TransactionsPage() {
     { id: 3, title: "Bus ticket", amount: 40, type: "expense", category: "Travel", date: "2026-11-03" },
   ]);
 
-  // STEP 1: form states
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
@@ -16,7 +15,6 @@ function TransactionsPage() {
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
 
-  // STEP 2: submit function
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -48,11 +46,15 @@ function TransactionsPage() {
     setError("");
   }
 
+  function handleDelete(id) {
+    const remaining = transactions.filter((item) => item.id !== id);
+    setTransactions(remaining);
+  }
+
   return (
     <div>
       <h2>Transactions</h2>
 
-      {/* STEP 3: the form */}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -85,6 +87,8 @@ function TransactionsPage() {
         {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
 
+      <p>Total transactions: {transactions.length}</p>
+
       <table>
         <thead>
           <tr>
@@ -93,6 +97,7 @@ function TransactionsPage() {
             <th>Type</th>
             <th>Category</th>
             <th>Date</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -103,6 +108,9 @@ function TransactionsPage() {
               <td>{item.type}</td>
               <td>{item.category}</td>
               <td>{item.date}</td>
+              <td>
+                <button onClick={() => handleDelete(item.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
