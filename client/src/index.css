@@ -226,3 +226,19 @@ tr:hover td {
 .auth-box input {
   width: 100%;
 }
+
+.panel {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  margin-top: 15px;
+}
+
+.panel h3 {
+  margin-top: 0;
+}
+
+.panel table {
+  box-shadow: none;
+}
