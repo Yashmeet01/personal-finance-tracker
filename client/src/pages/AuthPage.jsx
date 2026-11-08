@@ -100,4 +100,14 @@ function AuthPage() {
         )}
       </form>
 
-      <p></p>
+      <p>
+        {isLogin ? "New here? " : "Already have an account? "}
+        <button type="button" onClick={() => setIsLogin(!isLogin)}>
+          {isLogin ? "Sign Up" : "Login"}
+        </button>
+      </p>
+    </div>
+  );
+}
+
+export default AuthPage;
